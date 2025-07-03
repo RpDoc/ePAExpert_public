@@ -9,7 +9,7 @@ entries:
     name: epaexpert
     type: application
     urls:
-    - https://github.com/RpDoc/ePAExpert_public/releases/download/1.0.0/epaexpert.1.0.0.tar.gz
+    - https://github.com/RpDoc/ePAExpert_public/releases/download/1.0.0/epaexpert.1.0.0.tgz
     version: 1.0.0
  generated: "2025-07-02T08:09:01.476934886Z"
 

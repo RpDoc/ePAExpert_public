@@ -1,1 +1,15 @@
+apiVersion: v1
+entries:
+  epaexpert:
+    apiVersion: v2
+    appVersion: 1.0.0
+    created: "2025-07-02T08:09:01.476676744Z"
+    description: A Helm chart for running ePA Expert  via Kubernetes
+    digest: 1fc1a136e67881f23a525f8f5769bd34bd69715e45cb206e0aaf8b6e3f6830a2
+    name: epaexpert
+    type: application
+    urls:
+    - https://github.com/RpDoc/ePAExpert_public/releases/download/1.0.0/epaexpert.1.0.0.tar.gz
+    version: 1.0.0
+ generated: "2025-07-02T08:09:01.476934886Z"
 

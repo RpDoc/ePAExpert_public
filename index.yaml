@@ -1,7 +1,7 @@
 apiVersion: v1
 entries:
   epaexpert:
-    apiVersion: v2
+  - apiVersion: v2
     appVersion: 1.0.0
     created: "2025-07-02T08:09:01.476676744Z"
     description: A Helm chart for running ePA Expert  via Kubernetes

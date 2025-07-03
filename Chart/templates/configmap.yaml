@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-configmap
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Release.Name }}
+    {{- with .Values.customLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+data:
+  appsettings.json: |-
+    {
+      "Logging": {
+        "LogLevel": {
+          "Default": "Debug",
+          "Microsoft.AspNetCore": "Warning"
+        }
+      },
+      "Kestrel": {
+        "Endpoints": {
+          "Http": {
+            "Url": "http://*:{{ .Values.service.port }}"
+          }
+        }
+      },
+      "AllowedHosts": "*",
+      "RpDoc": {
+        "Schnittstelle": {
+          "ForceHttps": {{ .Values.rpdoc.schnittstelle.forceHttps }}
+        },
+        "Datenbank": {
+          "Statistik": "Server={{ .Values.rpdoc.database.server }},{{ .Values.rpdoc.database.port }};Initial Catalog=EPA_EXPERT_STATISTIK;Integrated Security=False;User ID={{ .Values.rpdoc.database.user}};Password={{ .Values.rpdoc.database.password}};Connect Timeout=15; TrustServerCertificate=true",
+          "BfarmReferenz": "Server={{ .Values.rpdoc.database.server }},{{ .Values.rpdoc.database.port }};Initial Catalog=BFARM_REFERENZ;Integrated Security=False;User ID={{ .Values.rpdoc.database.user}};Password={{ .Values.rpdoc.database.password}};Connect Timeout=15; TrustServerCertificate=true",
+          "RpDocDiagnose2": "Server={{ .Values.rpdoc.database.server }},{{ .Values.rpdoc.database.port }};Initial Catalog=RED_RPDOCDIAGNOSE2;Integrated Security=False;User ID={{ .Values.rpdoc.database.user}};Password={{ .Values.rpdoc.database.password}};Connect Timeout=15; TrustServerCertificate=true"
+        },
+        "TagesstatistikCreationTime": "{{ .Values.rpdoc.tagesstatistikCreationTime }}",
+        "OpenTelemetry": {
+          "ServiceName": "{{ .Values.rpdoc.openTelemetry.serviceName }}",
+          "UseTracingExporter": "{{ .Values.rpdoc.openTelemetry.useTracingExporter }}",
+          "UseMetricsExporter": "{{ .Values.rpdoc.openTelemetry.useMetricsExporter }}",
+          "UseLogExporter": "{{ .Values.rpdoc.openTelemetry.useLogExporter }}",
+          "Otlp": {
+            "Endpoint": "{{ .Values.rpdoc.openTelemetry.otlp.endpoint }}"
+          }
+        }
+      }
+    }

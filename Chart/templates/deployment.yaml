@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-deployment
+  namespace: {{ .Release.Namespace }} 
+  labels:
+    app: {{ .Release.Name }}-deployment
+    {{- with .Values.customLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-deployment
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-deployment
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: 25%
+        maxSurge: 25%
+    spec:
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      volumes:
+      - name: config-volume
+        configMap:
+          name: {{ .Release.Name }}-configmap
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      securityContext: {}
+      imagePullSecrets:
+      - name: {{ .Values.image.pullSecretName }}
+      containers:
+      - name: {{ .Release.Name }}-container
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        stdin: true
+        ports:
+        - containerPort: {{ .Values.service.port }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        volumeMounts:
+        - name: config-volume
+          mountPath: /home/nonroot/app/appsettings.json
+          subPath: appsettings.json
+        resources:
+          limits:
+            cpu: {{ .Values.deployment.resources.limits.cpu }}
+            memory: {{ .Values.deployment.resources.limits.memory }}
+          requests:
+            cpu: {{ .Values.deployment.resources.requests.cpu }}
+            memory: {{ .Values.deployment.resources.requests.memory }}
+        args:
+        - -cpus
+        - "2"
+        terminationMessagePolicy: File
+        {{- if .Values.deployment.probes.startupProbe.enabled }}
+        startupProbe:
+          httpGet:
+            scheme: HTTP
+            path: /epaexpertv2/v1/health/startup
+            port: {{ .Values.service.port }}
+          timeoutSeconds: {{ .Values.deployment.probes.startupProbe.timeoutSeconds }}
+          initialDelaySeconds: {{ .Values.deployment.probes.startupProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.deployment.probes.startupProbe.periodSeconds }}
+          failureThreshold: {{ .Values.deployment.probes.startupProbe.failureThreshold }}
+        {{ end }}
+        {{- if .Values.deployment.probes.livenessProbe.enabled }}
+        livenessProbe:
+          httpGet:
+            path: /epaexpertv2/v1/health/liveness
+            port: {{ .Values.service.port }}
+          timeoutSeconds: {{ .Values.deployment.probes.livenessProbe.timeoutSeconds }}
+          initialDelaySeconds: {{ .Values.deployment.probes.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.deployment.probes.livenessProbe.periodSeconds }}
+          failureThreshold: {{ .Values.deployment.probes.livenessProbe.failureThreshold }}
+        {{ end }}
+        {{- if .Values.deployment.probes.readinessProbe.enabled }}
+        readinessProbe:
+          httpGet:
+            path: /epaexpertv2/v1/health/readiness
+            port: {{ .Values.service.port }}
+          timeoutSeconds: {{ .Values.deployment.probes.readinessProbe.timeoutSeconds }}
+          initialDelaySeconds: {{ .Values.deployment.probes.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.deployment.probes.readinessProbe.periodSeconds }}
+          failureThreshold: {{ .Values.deployment.probes.readinessProbe.failureThreshold }}
+        {{ end }}

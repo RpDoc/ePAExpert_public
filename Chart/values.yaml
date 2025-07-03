@@ -1,0 +1,74 @@
+replicaCount: 3
+
+serviceAccountName: "rpdoc-epa-expert"
+
+image:
+  repository: quay.io/rpdoc/epa_expert_bitmarck
+  tag: "29342"
+  pullPolicy: Always
+  pullSecretName: rpdoc-epa-expert-quay-secret
+
+rpdoc:
+  schnittstelle:
+    forceHttps: false
+  database:
+    server: DB_SERVER
+    port: DB_PORT
+    user: DB_USER
+    password: DB_PASSWORD
+  tagesstatistikCreationTime: 23:59:00
+  openTelemetry:
+    serviceName: "otel-collector"
+    useTracingExporter: "OTLP"
+    useMetricsExporter: "OTLP"
+    useLogExporter: "OTLP"
+    otlp:
+      endpoint: "http://otel-collector:4317"
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 50
+
+deployment:
+  resources:
+    limits:
+      cpu: "500m"
+      memory: "1024M"
+    requests:
+      cpu: "250m"
+      memory: "512M"
+  probes:
+    startupProbe:
+      enabled: true
+      timeoutSeconds: 10
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      failureThreshold: 5
+    livenessProbe:
+      enabled: true
+      timeoutSeconds: 10
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      failureThreshold: 3
+    readinessProbe:
+      enabled: true
+      timeoutSeconds: 10
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      failureThreshold: 3
+
+service:
+  type: ClusterIP
+  protocol: TCP
+  port: 13000
+ 
+ingress:
+  enabled: true
+  host: HOST_ADDRESS
+  enableTls: false
+  tlsSecret: test-tls-secret
+
+customLabels:
+  namespace-owner: "rpdoc"
